@@ -38,7 +38,7 @@ def _main():
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1)
     early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1)
 
-    val_split = 0.1
+    val_split = 0.1 # validation set = 10 %
     with open(annotation_path) as f:
         lines = f.readlines()
     np.random.seed(10101)
@@ -54,7 +54,7 @@ def _main():
             # use custom yolo_loss Lambda layer.
             'yolo_loss': lambda y_true, y_pred: y_pred})
 
-        batch_size = 32
+        batch_size = 32 # wie viele bilder werden parallel während einer iteration verarbeitet
         print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
         model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes),
                 steps_per_epoch=max(1, num_train//batch_size),
