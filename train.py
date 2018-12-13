@@ -193,7 +193,7 @@ if __name__ == '__main__':
     '''
 
     parser.add_argument(
-        '--epochs', type=str,
+        '--epochs', type=int,
         help='number of epochs'
     )
 
