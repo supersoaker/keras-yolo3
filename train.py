@@ -2,6 +2,7 @@
 Retrain the YOLO model for your own dataset.
 """
 
+import argparse
 import numpy as np
 import keras.backend as K
 from keras.layers import Input, Lambda
@@ -13,11 +14,9 @@ from yolo3.model import preprocess_true_boxes, yolo_body, tiny_yolo_body, yolo_l
 from yolo3.utils import get_random_data
 
 
-def _main():
+def _main(number_of_epochs, anchors_path, classes_path):
     annotation_path = 'train.txt'
     log_dir = 'logs/000/'
-    classes_path = 'model_data/ipm_classes.txt'
-    anchors_path = 'model_data/yolo_anchors.txt'
     class_names = get_classes(classes_path)
     num_classes = len(class_names)
     anchors = get_anchors(anchors_path)
@@ -60,7 +59,7 @@ def _main():
                 steps_per_epoch=max(1, num_train//batch_size),
                 validation_data=data_generator_wrapper(lines[num_train:], batch_size, input_shape, anchors, num_classes),
                 validation_steps=max(1, num_val//batch_size),
-                epochs=50,
+                epochs=number_of_epochs,
                 initial_epoch=0,
                 callbacks=[logging, checkpoint])
         model.save(log_dir + 'trained_model_stage_1.h5')
@@ -188,4 +187,32 @@ def data_generator_wrapper(annotation_lines, batch_size, input_shape, anchors, n
     return data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes)
 
 if __name__ == '__main__':
-    _main()
+    parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
+    '''
+    Command line options
+    '''
+
+    parser.add_argument(
+        '--epochs', type=str,
+        help='number of epochs'
+    )
+
+    parser.add_argument(
+        '--anchors', type=str,
+        help='path to anchors definitions'
+    )
+    parser.add_argument(
+        '--classes', type=str,
+        help='path to classes definitions'
+    )
+
+    FLAGS = parser.parse_args()
+
+    if('epochs' not in FLAGS):
+        FLAGS.epochs = 50
+    if('classes' not in FLAGS):
+        FLAGS.classes = 'model_data/ipm_classes.txt'
+    if('anchors' not in FLAGS):
+        FLAGS.anchors = 'model_data/yolo_anchors.txt'
+
+    _main(FLAGS.epochs, FLAGS.anchors, FLAGS.classes)
